@@ -19,7 +19,11 @@ echo "$SERVER_INSTALL"
 pip install "fastapi[standard]"
 
 # Tavily AI 및 추가 LangChain 라이브러리 설치
-echo "$TAVILY_INSTALL"
-pip install -U langchain-community langgraph langchain-anthropic tavily-python langgraph-checkpoint-sqlite
+# echo "$TAVILY_INSTALL"
+# pip install -U langchain-community langgraph langchain-anthropic tavily-python langgraph-checkpoint-sqlite
+
+# RAG import 
+echo "$RAG"
+pip install python-dotenv langchain langchain-openai langgraph faiss-cpu unstructured tiktoken typing-extensions pypdf
 
 # 실행코드: $ bash install.sh

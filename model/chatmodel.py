@@ -12,6 +12,14 @@ from langchain_core.runnables.history import RunnableWithMessageHistory
 from langchain_openai import ChatOpenAI
 import logging
 
+# RAG imports
+from langchain.document_loaders import UnstructuredFileLoader
+from langchain.text_splitter import CharacterTextSplitter
+from langchain.embeddings import OpenAIEmbeddings, CacheBackedEmbeddings
+from langchain.vectorstores import FAISS
+from langchain.storage import LocalFileStore
+from langchain.schema.runnable import RunnablePassthrough
+
 # Load environment variables
 load_dotenv()
 
@@ -38,7 +46,9 @@ class ChatModel:
                  Use this history to provide contextually relevant and coherent answers.
                 Remember and maintain the flow of the conversation.
                  if sume one ask you, can you remember the history of talk, 
-                 you should answer, YES! """),
+                 you should answer, YES! 
+                 """),
+                 
                 MessagesPlaceholder(variable_name="history"),
                 ("human", "{question}"),
             ]
@@ -64,6 +74,20 @@ class ChatModel:
             input_messages_key="question",
             history_messages_key="history",
         )
+
+        # RAG setup
+        self.cache_dir = LocalFileStore("./.cache/rag_cache/")
+        self.splitter = CharacterTextSplitter.from_tiktoken_encoder(
+            separator="\n",
+            chunk_size=600,
+            chunk_overlap=100,
+        )
+        self.loader = UnstructuredFileLoader("./lucky_day.txt")
+        self.docs = self.loader.load_and_split(text_splitter=self.splitter)
+        self.embeddings = OpenAIEmbeddings()
+        self.cached_embeddings = CacheBackedEmbeddings.from_bytes_store(self.embeddings, self.cache_dir)
+        self.vectorstore = FAISS.from_documents(self.docs, self.cached_embeddings)
+        self.retriever = self.vectorstore.as_retriever()
 
     def _build_workflow(self):
         # Build the LangGraph workflow
@@ -97,6 +121,10 @@ class ChatModel:
         last_human_message = next((msg.content for msg in reversed(all_messages) if isinstance(msg, HumanMessage)), None)
         if last_human_message is None:
             last_human_message = "Hello, how can I help you?"
+        
+        # RAG integration
+        retrieved_docs = self.retriever.get_relevant_documents(last_human_message)
+        context = "\n\n".join([doc.page_content for doc in retrieved_docs])
 
         prompt = self.prompt_template.invoke({
             "history": all_messages,
@@ -111,3 +139,5 @@ class ChatModel:
         except Exception as e:
             logging.error(f"Error in _acall_model: {e}")
             raise e
+
+    
