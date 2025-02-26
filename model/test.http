@@ -1,0 +1,7 @@
+GET http://127.0.0.1:8000/chat?message=안녕 지금부터 얘기를 해볼게
+### 
+GET http://127.0.0.1:8000/chat?message=내 이름은 "해보"라고해 넌 누구니
+### 
+GET http://127.0.0.1:8000/chat?message=내 이름이 어떤 의미 일지 설명해줘
+### 
+GET http://127.0.0.1:8000/chat?message=내 이름 기억해봐!!!!
