@@ -7,9 +7,9 @@ Original file is located at
     https://colab.research.google.com/drive/1gEU7MdH6zKrG_BheaC1o8yUAh4w_vHwm
 """
 
-TAVILY_API_KEY = "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" # Paste your API key here
+TAVILY_API_KEY = "" # Paste your API key here
 
-OPENAI_API_KEY = "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"  # 올바른 API 키로 변경
+OPENAI_API_KEY = ""  # 올바른 API 키로 변경
 
 # !pip install tavily-python
 # !pip install langchain_openai
