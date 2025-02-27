@@ -76,7 +76,6 @@ class ChatModel:
             if last_human_message is None:
                 last_human_message = "무엇을 도와드릴까요?"
 
-            # 검색 없이 바로 프롬프트에 약물 정보 추가
             selected_row = df[df['제품명'].isin(target)]
             if not selected_row.empty:
                 extracted_info = "\n".join([f"{row['제품명']}: {row['효능효과']} {row['용법용량']} {row['주의사항']} {row['상호작용']} {row['부작용']}" for _, row in selected_row.iterrows()])
