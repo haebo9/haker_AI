@@ -1,10 +1,10 @@
 GET http://127.0.0.1:8000/chat?message=안녕 지금부터 얘기를 해볼게
 ### 
-GET http://127.0.0.1:8000/chat?message=내 이름은 "해보"라고해 넌 누구니
+GET http://127.0.0.1:8000/chat?message=활명수
 ### 
-GET http://127.0.0.1:8000/chat?message=내 이름이 어떤 의미 일지 설명해줘
+GET http://127.0.0.1:8000/chat?message=박카스에 대해서 알려줘
 ### 
-GET http://127.0.0.1:8000/chat?message=내 이름 기억해봐!!!!
+GET http://127.0.0.1:8000/chat?message=바카스를 먹을때 부작용이 있나?
 
 ###
 GET http://127.0.0.1:8000/chat?message=운수 좋은 날의 주인공은 누구인가요?

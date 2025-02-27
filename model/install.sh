@@ -9,6 +9,7 @@ python3 -m pip install --upgrade pip
 echo "$LANGCHAIN_OPENAI_INSTALL"
 pip install langchain
 pip install -qU "langchain[openai]"
+pip install -U langchain-community
 
 # 환경 변수 설정 (dotenv)
 echo "$ENV_INSTALL"
@@ -18,12 +19,12 @@ pip install dotenv
 echo "$SERVER_INSTALL"
 pip install "fastapi[standard]"
 
-# Tavily AI 및 추가 LangChain 라이브러리 설치
-# echo "$TAVILY_INSTALL"
-# pip install -U langchain-community langgraph langchain-anthropic tavily-python langgraph-checkpoint-sqlite
-
 # RAG import 
 echo "$RAG"
 pip install python-dotenv langchain langchain-openai langgraph faiss-cpu unstructured tiktoken typing-extensions pypdf
+
+# intsall Chroma
+echo "$Pinecone
+pip install chromadb
 
 # 실행코드: $ bash install.sh

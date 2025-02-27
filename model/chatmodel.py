@@ -1,4 +1,10 @@
+import pandas as pd
+from openai import OpenAI
+import numpy as np
 from dotenv import load_dotenv
+import os
+from sklearn.metrics.pairwise import cosine_similarity
+import pickle
 from langchain.chat_models import init_chat_model
 from langchain_core.messages import HumanMessage, BaseMessage, AIMessage
 from langgraph.checkpoint.memory import MemorySaver
@@ -11,19 +17,43 @@ from langchain_community.chat_message_histories import SQLChatMessageHistory
 from langchain_core.runnables.history import RunnableWithMessageHistory
 from langchain_openai import ChatOpenAI
 import logging
+import asyncio
+import openai
 
-# RAG imports
-from langchain.document_loaders import UnstructuredFileLoader
-from langchain.text_splitter import CharacterTextSplitter
-from langchain.embeddings import OpenAIEmbeddings, CacheBackedEmbeddings
-from langchain.vectorstores import FAISS
-from langchain.storage import LocalFileStore
-from langchain.schema.runnable import RunnablePassthrough
-
-# Load environment variables
+# OpenAI client initialization
 load_dotenv()
+client = OpenAI(api_key=os.getenv("OPENAI_API_KEY"))
 
-# Translation and Chat 
+# Load embeddings from pickle file
+with open('drug_embeddings.pkl', 'rb') as f:
+    df = pickle.load(f)
+
+# print(df.columns)
+
+item_names = df['제품명'].tolist()
+
+import openai
+
+def test_text(prompt):
+    """주어진 텍스트에서 약 이름을 정확하고 표준화된 이름으로 수정합니다. 
+    약 이름이 오타이거나 불분명한 경우 올바른 이름을 제공합니다. 
+    언급된 약이 존재하지 않거나 약이 아닌 경우 약이 아님을 명시합니다."""
+    client = openai.OpenAI()
+    messages = [
+        {"role": "system", "content": "약 이름을 수정하는 전문가입니다."},
+        {"role": "user", "content": prompt}
+    ]
+    response = client.chat.completions.create(
+        model="gpt-4o-mini",
+        messages=messages,
+        max_tokens=100,
+        n=1,
+        stop=None,
+        temperature=0,
+    )
+    return response.choices[0].message.content.strip()
+
+# Integrated ChatModel class
 class ChatModel:
     class State(TypedDict):
         messages: Annotated[Sequence[BaseMessage], add_messages]
@@ -38,23 +68,19 @@ class ChatModel:
         self.prompt_template = ChatPromptTemplate.from_messages(
             [
                 ("system", """
-                 You are a helpful assistant. 
-                 Answer all questions to the best of your ability in {language}. 
-                 When answering questions about professional concepts, 
-                 always use English terminology.
-                **Important:** You have access to the complete conversation history. 
-                 Use this history to provide contextually relevant and coherent answers.
-                Remember and maintain the flow of the conversation.
-                 if sume one ask you, can you remember the history of talk, 
-                 you should answer, YES! 
-                 """),
-                 
+                당신은 약학 전문가입니다. 
+                제공된 약물 정보를 기반으로 질문에 답하고, 필요한 경우 추가적인 의학 정보를 제공하세요.
+                답변은 항상 한국어로 작성하며, 전문 용어는 영어로 표기합니다.
+                **중요:** 이전 대화 내용을 참고하여 답변해야 합니다.
+                대화의 흐름을 유지하고, 맥락에 맞는 답변을 제공하세요.
+                만약, 대화 내용을 기억할 수 있는지 질문받으면, "네, 기억하고 있습니다!"라고 답변하세요.
+                """),
                 MessagesPlaceholder(variable_name="history"),
-                ("human", "{question}"),
+                ("human", "{last_human_message}"),
             ]
         )
 
-        # Use MemorySaver for LangGraph checkpointing
+        # Use MemorySaver for LangGrapㄴh checkpointing
         self.memory = MemorySaver()
 
         # Set up SQLite-based chat message history
@@ -75,20 +101,6 @@ class ChatModel:
             history_messages_key="history",
         )
 
-        # RAG setup
-        self.cache_dir = LocalFileStore("./.cache/rag_cache/")
-        self.splitter = CharacterTextSplitter.from_tiktoken_encoder(
-            separator="\n",
-            chunk_size=600,
-            chunk_overlap=100,
-        )
-        self.loader = UnstructuredFileLoader("./lucky_day.txt")
-        self.docs = self.loader.load_and_split(text_splitter=self.splitter)
-        self.embeddings = OpenAIEmbeddings()
-        self.cached_embeddings = CacheBackedEmbeddings.from_bytes_store(self.embeddings, self.cache_dir)
-        self.vectorstore = FAISS.from_documents(self.docs, self.cached_embeddings)
-        self.retriever = self.vectorstore.as_retriever()
-
     def _build_workflow(self):
         # Build the LangGraph workflow
         workflow = StateGraph(state_schema=self.State)
@@ -102,7 +114,7 @@ class ChatModel:
             self.chat_message_history = SQLChatMessageHistory(session_id=session_id, connection="sqlite:///sqlite.db")
             human_message = HumanMessage(content=message)
             self.chat_message_history.add_message(human_message)
-            state = {"messages": [human_message], "language": "ko"} # 채팅은 항상 한글로 처리
+            state = {"messages": [human_message], "language": "ko"} # Process chat in Korean
             result = await self.app.ainvoke(state, config={"configurable": {"thread_id": session_id}})
             ai_message = result["messages"][-1]
             self.chat_message_history.add_message(ai_message)
@@ -119,17 +131,28 @@ class ChatModel:
         past_messages = self.chat_message_history.messages
         all_messages = past_messages + state["messages"]
         last_human_message = next((msg.content for msg in reversed(all_messages) if isinstance(msg, HumanMessage)), None)
+        last_human_message = test_text(last_human_message)
         if last_human_message is None:
             last_human_message = "Hello, how can I help you?"
         
-        # RAG integration
-        retrieved_docs = self.retriever.get_relevant_documents(last_human_message)
-        context = "\n\n".join([doc.page_content for doc in retrieved_docs])
+        # Drug information retrieval (part of the first code)
+        query_embedding = client.embeddings.create(input=last_human_message, model="text-embedding-ada-002").data[0].embedding
+        similarities = cosine_similarity(np.array(query_embedding).reshape(1, -1), np.array(df['제품명_embedding'].tolist()))
+        most_similar_index = np.argmax(similarities)
+        most_similar_item = item_names[most_similar_index]
+        selected_row = df[df['제품명'] == most_similar_item]
+        print(selected_row)
 
+        if not selected_row.empty:
+            # Extract retrieved drug information
+            extracted_info = selected_row.iloc[0]['효능효과'] + " " + selected_row.iloc[0]['용법용량'] + " " + selected_row.iloc[0]['주의사항'] + " " + selected_row.iloc[0]['상호작용'] + " " + selected_row.iloc[0]['부작용']
+            last_human_message = f"{last_human_message}\n\nDrug Information:\n{extracted_info}\n\n출처: 식품의약품안전처 (https://www.data.go.kr/data/15075057/openapi.do)"
+        
         prompt = self.prompt_template.invoke({
             "history": all_messages,
             "language": state["language"],
             "question": last_human_message,
+            "last_human_message": last_human_message, # last_human_message 추가
         })
 
         try:
@@ -139,5 +162,3 @@ class ChatModel:
         except Exception as e:
             logging.error(f"Error in _acall_model: {e}")
             raise e
-
-    
