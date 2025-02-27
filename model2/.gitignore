@@ -1,0 +1,5 @@
+# Ignore file 
+.env
+__pycache__/
+.cache/
+.del/

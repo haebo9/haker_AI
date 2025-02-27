@@ -70,7 +70,7 @@ class ChatModel:
                 대화의 흐름을 유지하고, 맥락에 맞는 답변을 제공하세요.
                 만약, 대화 내용을 기억할 수 있는지 질문받으면, "네, 기억하고 있습니다!"라고 답변하세요.
 
-                마지막으로 너가 대답할 답을 2문장으로 이내로 정리하여 요약해서 말해줘.
+                마지막으로 너가 대답할 답을 30자 이내로 정리하여 요약해서 말해줘.
                 이때 질문에 해당하는 답만 정리해서 말해줘. 
                 만약 추가적인 질문이나 다른 주제에 대해 이야기하고 싶다면 언제든지 말씀해 주세요!와 같은 불필요한 말은 포함하지마.
                 어르신에게 설명하듯 친절한 어투로 설명해줘. 
@@ -94,11 +94,7 @@ class ChatModel:
             history_messages_key="history",
         )
 
-    def _build_workflow(self):
-        workflow = StateGraph(state_schema=self.State)
-        workflow.add_node("model", self._call_model)
-        workflow.add_edge(START, "model")
-        return workflow
+ 
     
     async def chat(self, message: str, session_id: str = "default_thread"):
         try:
