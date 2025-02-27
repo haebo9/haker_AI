@@ -184,7 +184,7 @@ def _trim_content(self, content: str) -> str:
         return content
 
 if __name__ == "__main__":
-    api_key = "AIzaSyApArsRuO98xud_37C0j9WtJuJqNjwm6f0"
+    api_key = ""
     gemini_model = GeminiModel(api_key)
 
     text1 = load_and_prepare_data(ROOT_PATH)
