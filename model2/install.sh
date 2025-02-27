@@ -10,6 +10,7 @@ echo "$LANGCHAIN_OPENAI_INSTALL"
 pip install langchain
 pip install -qU "langchain[openai]"
 pip install -U langchain-community
+pip install langgraph
 
 # 환경 변수 설정 (dotenv)
 echo "$ENV_INSTALL"
@@ -20,11 +21,6 @@ echo "$SERVER_INSTALL"
 pip install "fastapi[standard]"
 
 # RAG import 
-echo "$RAG"
-pip install python-dotenv langchain langchain-openai langgraph faiss-cpu unstructured tiktoken typing-extensions pypdf
-
-# intsall Chroma
-echo "$Pinecone
-pip install chromadb
+# echo "$RAG"
 
 # 실행코드: $ bash install.sh

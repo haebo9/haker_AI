@@ -1,0 +1,13 @@
+### 
+GET https://psychic-sniffle-g4q7pj7j9gwghp9v9-8000.app.github.dev/chat?message=활명수
+### 
+GET https://psychic-sniffle-g4q7pj7j9gwghp9v9-8000.app.github.dev/chat?message=신신티눈고(살리실산반창고)(수출명:SINSINCORNPLASTER)
+###
+GET https://psychic-sniffle-g4q7pj7j9gwghp9v9-8000.app.github.dev/chat?message=아네모정
+###
+GET https://psychic-sniffle-g4q7pj7j9gwghp9v9-8000.app.github.dev/chat?message=타치온정50밀리그램(글루타티온(환원형))
+### 
+GET https://psychic-sniffle-g4q7pj7j9gwghp9v9-8000.app.github.dev/chat?message=겔포스현탁액(인산알루미늄겔)
+### 
+
+# 사용자가 Codespaces에서 실행 중인 FastAPI 애플리케이션에 접근하려고 할 때, Codespaces의 포트 포워딩 서비스가 요청을 가로채고 이 로딩 페이지를 표시합니다. 이는 포트 포워딩이 아직 완료되지 않았거나, 인증 및 설정 과정이 진행 중임을 의미합니다. 포트 포워딩이 완료되면, 사용자는 FastAPI 애플리케이션의 응답을 받을 수 있습니다.
