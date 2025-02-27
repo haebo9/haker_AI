@@ -9,7 +9,7 @@ if __name__ == "__main__":
 # uvicorn main:app --reload
 
 if __name__ == "__main__":
-    api_key = "AIzaSyApArsRuO98xud_37C0j9WtJuJqNjwm6f0"  # 실제 API 키로 변경
+    api_key =   # 실제 API 키로 변경
     model = GeminiModel(api_key)
 
     text1 = load_json_file('/Users/jaeseoksee/Documents/code/haker_AI/model2/target_data.json')

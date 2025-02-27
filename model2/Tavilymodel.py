@@ -19,7 +19,7 @@ import streamlit as st
 from langchain_openai import ChatOpenAI
 
 tavily_client = TavilyClient(TAVILY_API_KEY)
-gpt_4o = ChatOpenAI(api_key=OPENAI_API_KEY, model="gpt-4o", temperature=0.1)
+gpt_4o = ChatOpenAI(api_key=OPENAI_API_KEY, model="gpt-4o-mini", temperature=0.1)
 
 st.title("고령자 맞춤 복약 정보 챗봇")
 
