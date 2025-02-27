@@ -7,9 +7,9 @@ Original file is located at
     https://colab.research.google.com/drive/1gEU7MdH6zKrG_BheaC1o8yUAh4w_vHwm
 """
 
-TAVILY_API_KEY = "" # Paste your API key here
+# TAVILY_API_KEY = "" # Paste your API key here
 
-OPENAI_API_KEY = ""  # 올바른 API 키로 변경
+# OPENAI_API_KEY = ""  # 올바른 API 키로 변경
 
 # !pip install tavily-python
 # !pip install langchain_openai
