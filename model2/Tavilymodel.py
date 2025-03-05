@@ -10,13 +10,12 @@ Original file is located at
 # !pip install tavily-python
 # !pip install langchain_openai
 
+# from tavily import TavilyClient
+# import streamlit as st
+# from langchain_openai import ChatOpenAI
 
-from tavily import TavilyClient
-import streamlit as st
-from langchain_openai import ChatOpenAI
-
-tavily_client = TavilyClient(TAVILY_API_KEY)
-gpt_4o = ChatOpenAI(api_key=OPENAI_API_KEY, model="gpt-4o-mini", temperature=0.1)
+tavily_client = TavilyClient("")
+gpt_4o = ChatOpenAI(api_key='', model="gpt-4o-mini", temperature=0.1)
 
 st.title("고령자 맞춤 복약 정보 챗봇")
 
