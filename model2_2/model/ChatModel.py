@@ -24,7 +24,7 @@ from model.DataLoader import DataLoader
 
 
 # Langchain and Data Loading Code
-ROOT_PATH = Path("/Users/jaeseoksee/Documents/code/haker_AI/model2")
+ROOT_PATH = Path("/Users/jaeseoksee/Documents/code/haker_AI/model2_2")
 DB_PATH = ROOT_PATH / "data" / "sqlite.db"
 DB_CONNECTION = f"sqlite:///{DB_PATH}"
 SESSION_ID = "test_session_id"
