@@ -16,41 +16,17 @@ from langchain_core.runnables.history import RunnableWithMessageHistory
 from langchain_openai import ChatOpenAI
 import logging
 
-# Gemini Model Code
-class GeminiModel:
-    def __init__(self, api_key: str, model_name: str = "gemini-2.0-flash"):
-        self.api_key = api_key
-        self.model_name = model_name
-        genai.configure(api_key=self.api_key)
-        self.model = genai.GenerativeModel(self.model_name)
+# Langchain 모델 실행 부분
+from Chatmodel import ChatModel
+from geminiModel import GeminiModel
+chat_model = ChatModel()  # ChatModel 인스턴스 생성
+# gemini_Model = GeminiModel(api_key=os.getenv("GEMINI_API_KEY")) 
 
-    def generate_content(self, prompt: str) -> str:
-        try:
-            response = self.model.generate_content(prompt)
-            return response.text
-        except Exception as e:
-            print(f"Error generating content: {e}")
-            return None
+load_dotenv() # 환경변수 로드
+api_key = os.getenv("GEMINI_API_KEY") # 환경변수에서 api키를 가져옴
 
-    def generate_content_stream(self, prompt: str):
-        try:
-            response = self.model.generate_content(prompt, stream=True)
-            for chunk in response:
-                yield chunk.text
-        except Exception as e:
-            print(f"Error generating content stream: {e}")
-            yield f"Error: {e}"
-
-def load_json_file(filepath: str):
-    try:
-        with open(filepath, 'r', encoding='utf-8') as f:
-            return json.load(f)
-    except FileNotFoundError:
-        print(f"Error: File not found at {filepath}")
-        return None
-    except json.JSONDecodeError:
-        print(f"Error: Invalid JSON format in {filepath}")
-        return None
+if api_key is None:
+    raise ValueError("GEMINI_API_KEY 환경 변수가 설정되지 않았습니다.")
 
 # Langchain and Data Loading Code
 load_dotenv()
@@ -101,7 +77,7 @@ class ChatModel:
                 ("human", "{last_human_message}"),
             ]
         )
-
+        self.gemini_model = GeminiModel(api_key=os.getenv("GEMINI_API_KEY")) 
         self.memory = MemorySaver()
         self.chat_message_history = SQLChatMessageHistory(
             session_id=SESSION_ID, connection=DB_CONNECTION
@@ -126,11 +102,16 @@ class ChatModel:
             ai_message = result["messages"][-1]
             self.chat_message_history.add_message(ai_message)
             trimmed_content = self._trim_content(ai_message.content)
-            
-            return {ai_message.content}
+            gemini_response = self.gemini_model.generate_content(trimmed_content)
+            if gemini_response:
+                gemini_content = gemini_response
+            else:
+                gemini_content = "Gemini 모델 응답 실패"
+
+            return gemini_content
         except Exception as e:
             logging.error(f"Error in chat: {e}")
-            raise e
+            return str(e)
     
     async def _call_model(self, state: State):
         past_messages = self.chat_message_history.messages
@@ -138,16 +119,18 @@ class ChatModel:
         last_human_message = next((msg.content for msg in reversed(all_messages) if isinstance(msg, HumanMessage)), None)
         if last_human_message is None:
             last_human_message = "무엇을 도와드릴까요?"
-
+            
         extracted_info = self._extract_info()
         new_component = ", ".join(new_data.get("성분", []))
-        
+        gemini_response = self.gemini_model.generate_content(last_human_message)
+
         prompt = self.prompt_template.invoke({
             "history": all_messages,
             "language": state["language"],
             "last_human_message": last_human_message,
             "extracted_info": extracted_info,
             "new_component": new_component,
+            "gemini_result": gemini_response
         })
 
         try:
@@ -178,43 +161,38 @@ class ChatModel:
         builder.set_entry_point("model")
         return builder
 
-def _trim_content(self, content: str) -> str:
+    def _trim_content(self, content: str) -> str:
         if len(content) > TRIM_LENGTH:
             return content[:TRIM_LENGTH] + "..."
         return content
 
-if __name__ == "__main__":
-    api_key = ""
-    gemini_model = GeminiModel(api_key)
+# from geminiModel import GeminiModel
+# if __name__ == "__main__":
+#     api_key = ""
+#     gemini_model = GeminiModel(api_key)
 
-    text1 = load_and_prepare_data(ROOT_PATH)
-    text2 = "부루펜은 이부프로펜 성분의 비스테로이드성 항염증제로, 두통, 치통, 생리통 등 다양한 통증 완화 및 해열 효과가 있으며, 성인은 1회 1정씩 필요시 하루 3회까지 복용 가능하나, 위장 장애, 알레르기 반응, 간 기능 이상 등의 부작용과 임산부 및 어린이 복용 시 주의가 필요하고, 다른 약물과의 상호작용 가능성이 있으므로 의사나 약사와 상담 후 복용해야 합니다."
-    prompt = f"""
-    첫 번째 글:
-    {text1}
+#     text1 = load_and_prepare_data(ROOT_PATH)
+#     text2 = "부루펜은 이부프로펜 성분의 비스테로이드성 항염증제로, 두통, 치통, 생리통 등 다양한 통증 완화 및 해열 효과가 있으며, 성인은 1회 1정씩 필요시 하루 3회까지 복용 가능하나, 위장 장애, 알레르기 반응, 간 기능 이상 등의 부작용과 임산부 및 어린이 복용 시 주의가 필요하고, 다른 약물과의 상호작용 가능성이 있으므로 의사나 약사와 상담 후 복용해야 합니다."
+#     prompt = f"""
+#     첫 번째 글:
+#     {text1}
 
-    두 번째 글:
-    {text2}
+#     두 번째 글:
+#     {text2}
 
-    찻반쩨 글은 기존에 먹던 약이고, 두번째 글에 있는 새로운 약을 먹을까 한다. 상호작용을 자세하게 분석하여 두 문장 이내로 설명하라.
-    반드시 요약하여 핵심적인 문장으로 설명하라.
-    """
+#     찻반쩨 글은 기존에 먹던 약이고, 두번째 글에 있는 새로운 약을 먹을까 한다. 상호작용을 자세하게 분석하여 두 문장 이내로 설명하라.
+#     반드시 요약하여 핵심적인 문장으로 설명하라.
+#     """
 
-    response_text = gemini_model.generate_content(prompt)
-    if response_text:
-        print("Generated Response:")
-        print(response_text)
+#     response_text = gemini_model.generate_content(prompt)
+#     if response_text:
+#         print("Generated Response:")
+#         print(response_text)
 
-    # print("\nStreaming Response:")
-    # for chunk in gemini_model.generate_content_stream(prompt):
-    #     if chunk:
-    #         print(chunk, end="")
-    # print()
-
-    # Langchain 모델 실행 부분
-    chat_model = ChatModel()  # ChatModel 인스턴스 생성
+#     # Langchain 모델 실행 부분
+#     chat_model = ChatModel()  # ChatModel 인스턴스 생성
     
-    langchain_response = chat_model.chat(message)
-    print("\nLangchain Response:")
-    print(langchain_response)
+#     langchain_response = chat_model.chat(message)
+#     print("\nLangchain Response:")
+#     print(langchain_response)
 

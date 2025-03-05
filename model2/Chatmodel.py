@@ -79,7 +79,8 @@ class ChatModel:
         self.chain = self.prompt_template | self.llm
         self.chain_with_history = RunnableWithMessageHistory(
             self.chain,
-            lambda session_id: SQLChatMessageHistory(session_id=session_id, connection=DB_CONNECTION),
+            lambda session_id: [],
+            # lambda session_id: SQLChatMessageHistory(session_id=session_id, connection=DB_CONNECTION),
             input_messages_key="question",
             history_messages_key="history",
         )
@@ -94,7 +95,7 @@ class ChatModel:
             ai_message = result["messages"][-1]
             self.chat_message_history.add_message(ai_message)
             trimmed_content = self._trim_content(ai_message.content)
-            return {ai_message.content}
+            return {trimmed_content.content}
         except Exception as e:
             logging.error(f"Error in chat: {e}")
             raise e

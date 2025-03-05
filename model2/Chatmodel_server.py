@@ -2,6 +2,7 @@ from fastapi import FastAPI, Query, Response, Header
 import logging, json, os
 from dotenv import load_dotenv
 from Chatmodel import ChatModel
+from Chatmodel_copy import ChatModel
 from openai import OpenAI
 
 # 앱/모델 인스턴스 설정 
@@ -11,6 +12,7 @@ chat_model = ChatModel()
 # api_key
 load_dotenv()
 api_key = os.getenv("OPENAI_API_KEY") # api key를 전역변수로 설정
+
 client = OpenAI(api_key=api_key)
 
 @app.get("/")
