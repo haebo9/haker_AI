@@ -123,7 +123,7 @@ class TavilyModel:
 # 테스트를 위한 코드
 if __name__ == "__main__":
     # 1.  '.env' 파일이 있는  루트 디렉토리 설정 (utils의 상위 디렉토리)
-    ROOT_PATH = "/Users/jaeseoksee/Documents/code/haker_AI/model2"  # 실제 프로젝트 루트 경로로 변경!
+    ROOT_PATH = "/Users/jaeseoksee/Documents/code/haker_AI/model2_2"  # 실제 프로젝트 루트 경로로 변경!
 
     # 2. TavilyModel 인스턴스 생성
     chatbot = TavilyModel(ROOT_PATH=ROOT_PATH)
