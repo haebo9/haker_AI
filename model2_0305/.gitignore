@@ -1,0 +1,5 @@
+# Ignore file 
+utils/.env
+**/__pycache__/
+data/sqlite.db
+.DS_Store
