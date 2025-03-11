@@ -34,7 +34,7 @@
 - TAVILY API : 데이터 베이스에 없는 정보를 보완하는 역할.
 - LANGCHAIN : ChatPromptTemplete 사용하여 시스템 프롬프트 설정 / openai api, gemini api 호출하여 외부 api에 연결
 - FAST API : 엔드포인트를 구현하여 백엔드에서 HTTP 요청으로 모델 결과에 요청 및 답변.(JSON format)
-- DUR-data API : 제품명, 제조사명, 복용법, 주의사항, 상호작용에 대한 정보 추출하기 위한 데잍
+- DUR-data API : 제품명, 제조사명, 복용법, 주의사항, 상호작용에 대한 정보 추출하기 위한 데이터
 - Sqlite.db : 채팅의 대화 내용을 기억하여 답변하기 위한 데이터 베이스 
 
 ### 파일 구조
